@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hrishit Parida — Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #111111;
+      --surface: #161616;
+      --border: #222;
+      --accent: #b8ff57;
+      --accent2: #57c4ff;
+      --text: #e8e8e8;
+      --muted: #666;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-display);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    #cursor {
+      position: fixed; width: 12px; height: 12px;
+      background: var(--accent); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width .2s, height .2s, background .2s;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed; width: 36px; height: 36px;
+      border: 1.5px solid var(--accent); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all .12s ease;
+      mix-blend-mode: difference;
+    }
+    body:has(a:hover) #cursor, body:has(button:hover) #cursor { width: 20px; height: 20px; }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025; pointer-events: none; z-index: 1000;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 3rem;
+      border-bottom: 1px solid transparent;
+      z-index: 100;
+      transition: border-color .3s, background .3s, backdrop-filter .3s;
+    }
+    nav.scrolled {
+      border-color: var(--border);
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(14px);
+    }
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      color: var(--accent);
+      letter-spacing: .08em;
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      letter-spacing: .1em;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(184,255,87,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(184,255,87,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-glow {
+      position: absolute; top: -20%; right: -10%;
+      width: 60vw; height: 60vw; max-width: 700px; max-height: 700px;
+      background: radial-gradient(circle, rgba(184,255,87,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      color: var(--accent);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp .6s .2s forwards;
+    }
+    .hero-name {
+      font-size: clamp(3.5rem, 10vw, 9rem);
+      font-weight: 800;
+      line-height: .95;
+      letter-spacing: -.03em;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp .7s .35s forwards;
+    }
+    .hero-name span { color: var(--accent); }
+    .hero-sub {
+      max-width: 540px;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 3rem;
+      font-family: var(--font-mono);
+      font-size: .9rem;
+      opacity: 0;
+      animation: fadeUp .7s .5s forwards;
+    }
+    .hero-cta {
+      display: flex; gap: 1.2rem; flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp .7s .65s forwards;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .8rem 1.8rem;
+      font-family: var(--font-mono); font-size: .8rem;
+      letter-spacing: .08em; text-transform: uppercase;
+      text-decoration: none;
+      border: 1.5px solid;
+      transition: all .25s;
+      cursor: none;
+    }
+    .btn-primary {
+      background: var(--accent); color: #0a0a0a;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .hero-scroll {
+      position: absolute; bottom: 2.5rem; right: 3rem;
+      font-family: var(--font-mono); font-size: .7rem;
+      color: var(--muted); letter-spacing: .15em; text-transform: uppercase;
+      writing-mode: vertical-rl;
+      display: flex; align-items: center; gap: .8rem;
+      opacity: 0; animation: fadeUp .7s .9s forwards;
+    }
+    .hero-scroll::before {
+      content: '';
+      width: 1px; height: 50px;
+      background: linear-gradient(var(--accent), transparent);
+    }
+
+    /* SECTION COMMONS */
+    section { padding: 7rem 3rem; position: relative; }
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.2rem;
+      display: flex; align-items: center; gap: .8rem;
+    }
+    .section-label::before {
+      content: '';
+      display: block; width: 30px; height: 1px;
+      background: var(--accent);
+    }
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.05;
+      margin-bottom: 3rem;
+    }
+    .divider {
+      border: none; border-top: 1px solid var(--border);
+      margin: 0 3rem;
+    }
+
+    /* ABOUT */
+    #about { background: var(--bg2); }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: start;
+      max-width: 1100px;
+    }
+    .about-text p {
+      font-size: 1.1rem;
+      line-height: 1.85;
+      color: #aaa;
+      margin-bottom: 1.2rem;
+      font-family: var(--font-mono);
+      font-size: .9rem;
+    }
+    .about-text p strong { color: var(--text); }
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .stat-box {
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+      transition: border-color .3s;
+    }
+    .stat-box:hover { border-color: var(--accent); }
+    .stat-box::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(184,255,87,0.04), transparent);
+      opacity: 0; transition: opacity .3s;
+    }
+    .stat-box:hover::after { opacity: 1; }
+    .stat-num {
+      font-size: 2.2rem; font-weight: 800;
+      color: var(--accent); line-height: 1;
+      margin-bottom: .3rem;
+    }
+    .stat-label {
+      font-family: var(--font-mono); font-size: .72rem;
+      color: var(--muted); text-transform: uppercase; letter-spacing: .1em;
+    }
+    .about-right { display: flex; flex-direction: column; gap: 1rem; }
+    .skill-group { margin-bottom: 1.5rem; }
+    .skill-group-label {
+      font-family: var(--font-mono); font-size: .72rem;
+      color: var(--muted); letter-spacing: .12em; text-transform: uppercase;
+      margin-bottom: .8rem;
+    }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .skill-tag {
+      padding: .4rem .85rem;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: .75rem;
+      color: var(--text); letter-spacing: .05em;
+      transition: all .2s;
+      background: var(--surface);
+    }
+    .skill-tag:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(184,255,87,0.06);
+    }
+
+    /* PROJECTS */
+    #projects { background: var(--bg); }
+    .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px; background: var(--border); }
+    .project-card {
+      background: var(--bg);
+      padding: 2.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: background .3s;
+      display: flex; flex-direction: column;
+    }
+    .project-card:hover { background: var(--surface); }
+    .project-card::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--accent);
+      transform: scaleY(0); transform-origin: bottom;
+      transition: transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    .project-card:hover::before { transform: scaleY(1); }
+    .project-num {
+      font-family: var(--font-mono); font-size: .7rem;
+      color: var(--muted); letter-spacing: .1em;
+      margin-bottom: 1.5rem;
+    }
+    .project-title {
+      font-size: 1.6rem; font-weight: 800;
+      letter-spacing: -.02em; line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .project-desc {
+      font-family: var(--font-mono); font-size: .82rem;
+      color: var(--muted); line-height: 1.7;
+      flex: 1; margin-bottom: 2rem;
+    }
+    .project-meta { display: flex; flex-direction: column; gap: .8rem; }
+    .project-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .project-tag {
+      font-family: var(--font-mono); font-size: .68rem;
+      padding: .25rem .6rem;
+      background: rgba(184,255,87,0.08);
+      color: var(--accent); border: 1px solid rgba(184,255,87,0.2);
+      letter-spacing: .06em;
+    }
+    .project-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-family: var(--font-mono); font-size: .7rem;
+      color: var(--muted); letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .project-badge svg { width: 12px; height: 12px; }
+    .project-links { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .project-link {
+      font-family: var(--font-mono); font-size: .75rem;
+      color: var(--accent); text-decoration: none; letter-spacing: .08em;
+      display: flex; align-items: center; gap: .4rem;
+      border-bottom: 1px solid rgba(184,255,87,0.3);
+      padding-bottom: .1rem;
+      transition: border-color .2s;
+    }
+    .project-link:hover { border-color: var(--accent); }
+    .project-link svg { width: 12px; height: 12px; }
+
+    /* EDUCATION */
+    #education { background: var(--bg2); }
+    .edu-list { display: flex; flex-direction: column; gap: 0; max-width: 800px; }
+    .edu-item {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 2rem;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      transition: padding-left .3s;
+    }
+    .edu-item:first-child { border-top: 1px solid var(--border); }
+    .edu-item:hover { padding-left: 1rem; }
+    .edu-year {
+      font-family: var(--font-mono); font-size: .78rem;
+      color: var(--muted); padding-top: .3rem;
+    }
+    .edu-info {}
+    .edu-degree {
+      font-size: 1.25rem; font-weight: 700;
+      letter-spacing: -.01em; margin-bottom: .3rem;
+    }
+    .edu-school {
+      font-family: var(--font-mono); font-size: .82rem;
+      color: var(--muted); margin-bottom: .5rem;
+    }
+    .edu-score {
+      display: inline-block;
+      font-family: var(--font-mono); font-size: .75rem;
+      padding: .25rem .7rem;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      background: rgba(184,255,87,0.05);
+    }
+
+    /* ACHIEVEMENTS */
+    #achievements { background: var(--bg); }
+    .ach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; max-width: 1000px; }
+    .ach-card {
+      border: 1px solid var(--border);
+      padding: 2rem;
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+      transition: border-color .3s, transform .3s;
+    }
+    .ach-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .ach-icon {
+      font-size: 1.8rem; margin-bottom: 1rem;
+      display: block;
+    }
+    .ach-title {
+      font-size: 1rem; font-weight: 700;
+      letter-spacing: -.01em; margin-bottom: .5rem;
+    }
+    .ach-desc {
+      font-family: var(--font-mono); font-size: .78rem;
+      color: var(--muted); line-height: 1.6;
+    }
+    .ach-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform: scaleX(0); transform-origin: left;
+      transition: transform .35s;
+    }
+    .ach-card:hover::after { transform: scaleX(1); }
+
+    /* CONTACT */
+    #contact { background: var(--bg2); }
+    .contact-inner { max-width: 700px; }
+    .contact-big {
+      font-size: clamp(2.5rem, 5vw, 5rem);
+      font-weight: 800; letter-spacing: -.04em;
+      line-height: 1; margin-bottom: 2rem;
+    }
+    .contact-big span { color: var(--accent); }
+    .contact-text {
+      font-family: var(--font-mono); font-size: .88rem;
+      color: var(--muted); line-height: 1.8;
+      margin-bottom: 3rem; max-width: 480px;
+    }
+    .contact-links { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+    .contact-link {
+      display: inline-flex; align-items: center; gap: .6rem;
+      font-family: var(--font-mono); font-size: .82rem;
+      color: var(--text); text-decoration: none;
+      letter-spacing: .06em;
+      padding: 1rem 1.5rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: all .25s;
+    }
+    .contact-link:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(184,255,87,0.05);
+    }
+    .contact-link svg { width: 16px; height: 16px; }
+
+    /* FOOTER */
+    footer {
+      padding: 2rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg);
+    }
+    .footer-copy {
+      font-family: var(--font-mono); font-size: .72rem;
+      color: var(--muted); letter-spacing: .08em;
+    }
+    .footer-copy span { color: var(--accent); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity .7s, transform .7s;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      section { padding: 5rem 1.5rem; }
+      .divider { margin: 0 1.5rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .ach-grid { grid-template-columns: 1fr 1fr; }
+      footer { flex-direction: column; gap: .8rem; text-align: center; }
+      #hero { padding: 1.5rem; }
+      .hero-scroll { display: none; }
+    }
+    @media (max-width: 600px) {
+      .ach-grid { grid-template-columns: 1fr; }
+      .edu-item { grid-template-columns: 1fr; gap: .5rem; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a class="nav-logo" href="#">HP_</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#achievements">Achievements</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-tag">B.Tech CSE @ VIT Vellore &nbsp;·&nbsp; AI / ML Enthusiast</div>
+  <h1 class="hero-name">Hrishit<br><span>Parida.</span></h1>
+  <p class="hero-sub">
+    I build intelligent systems that solve real-world problems — from predicting crop prices
+    with blockchain security to AI-driven soil health analysis.
+  </p>
+  <div class="hero-cta">
+    <a href="#projects" class="btn btn-primary">View Projects ↓</a>
+    <a href="#contact" class="btn btn-outline">Get in Touch</a>
+  </div>
+
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<hr class="divider" />
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-text">
+      <div class="section-label reveal">About</div>
+      <h2 class="section-title reveal">Who I Am.</h2>
+
+      <p class="reveal">
+        I'm <strong>Hrishit Parida</strong>, a Computer Science freshman at VIT Vellore with a strong
+        foundation in AI and Machine Learning. I'm deeply interested in building technology that has
+        real agricultural and social impact.
+      </p>
+      <p class="reveal">
+        From hackathons to multidisciplinary projects, I've worked with engineers, health scientists,
+        and domain experts to ship solutions that matter. I believe great software is built at the
+        intersection of disciplines.
+      </p>
+
+      <div class="about-stats">
+        <div class="stat-box reveal">
+          <div class="stat-num">96.8%</div>
+          <div class="stat-label">Class X Score</div>
+        </div>
+        <div class="stat-box reveal">
+          <div class="stat-num">2</div>
+          <div class="stat-label">Projects Built</div>
+        </div>
+        <div class="stat-box reveal">
+          <div class="stat-num">93.8%</div>
+          <div class="stat-label">Class XII Score</div>
+        </div>
+        <div class="stat-box reveal">
+          <div class="stat-num">2029</div>
+          <div class="stat-label">Expected Grad.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-right reveal">
+      <div class="skill-group">
+        <div class="skill-group-label">Languages</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">C</span>
+          <span class="skill-tag">C++</span>
+          <span class="skill-tag">JavaScript</span>
+          <span class="skill-tag">HTML / CSS</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-label">Libraries & Tools</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Pandas</span>
+          <span class="skill-tag">NumPy</span>
+          <span class="skill-tag">Scikit-learn</span>
+          <span class="skill-tag">OpenCV</span>
+          <span class="skill-tag">Matplotlib</span>
+          <span class="skill-tag">Git</span>
+          <span class="skill-tag">VS Code</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-label">Domains</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Machine Learning</span>
+          <span class="skill-tag">Blockchain / Web3</span>
+          <span class="skill-tag">Data Analysis</span>
+          <span class="skill-tag">AI Systems</span>
+          <span class="skill-tag">Prompt Engineering</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-label">Certifications</div>
+        <div class="skill-tags">
+          <span class="skill-tag">IBM — Prompt Engineering</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-label reveal">Work</div>
+  <h2 class="section-title reveal">Projects.</h2>
+
+  <div class="projects-grid">
+
+    <div class="project-card reveal">
+      <div class="project-num">01 / 02</div>
+      <h3 class="project-title">AI/ML Crop &amp; Pulse Price Predictor</h3>
+      <p class="project-desc">
+        An intelligent price prediction system for key commodities — onion, potato, pulses — 
+        that fuses historical price data with live signals: weather patterns, crop production volumes, 
+        and market indicators. Blockchain integration (Web3) ensures tamper-proof data provenance 
+        and security throughout the pipeline.
+        <br><br>
+        Built during Central Hack 2026, VIT's largest hackathon, reaching the penultimate round 
+        as a team of freshers.
+      </p>
+
+      <div class="project-meta">
+        <div>
+          <div class="project-tags">
+            <span class="project-tag">Python</span>
+            <span class="project-tag">AI / ML</span>
+            <span class="project-tag">Blockchain</span>
+            <span class="project-tag">Web3</span>
+            <span class="project-tag">JavaScript</span>
+            <span class="project-tag">HTML/CSS</span>
+          </div>
+        </div>
+        <div class="project-badge">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6l-4-4z"/>
+          </svg>
+          Central Hack 2026 · VIT Vellore
+        </div>
+      </div>
+
+      <div class="project-links">
+        <a href="https://github.com/hrish1t/price-ai-blockchain" target="_blank" class="project-link">
+          <svg viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          GitHub →
+        </a>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-num">02 / 02</div>
+      <h3 class="project-title">AI Soil Health Prediction Model</h3>
+      <p class="project-desc">
+        A data-driven soil health analysis system that evaluates critical soil parameters — 
+        nutrient levels, pH, moisture, and more — to generate actionable insights for farmers 
+        and agronomists. Combines ML classification with an interactive visual interface 
+        for understanding soil conditions and crop recommendations.
+        <br><br>
+        A multidisciplinary project built with peers from Health Sciences and Electronics &amp; 
+        Communications Engineering.
+      </p>
+
+      <div class="project-meta">
+        <div>
+          <div class="project-tags">
+            <span class="project-tag">Python</span>
+            <span class="project-tag">Scikit-learn</span>
+            <span class="project-tag">Pandas</span>
+            <span class="project-tag">NumPy</span>
+            <span class="project-tag">Matplotlib</span>
+            <span class="project-tag">HTML</span>
+          </div>
+        </div>
+        <div class="project-badge">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M8 1l2 4 5 .7-3.5 3.5.8 5L8 12l-4.3 2.2.8-5L1 5.7 6 5z"/>
+          </svg>
+          Multidisciplinary Project · VIT Vellore
+        </div>
+      </div>
+
+      <div class="project-links">
+        <a href="https://github.com/hrish1t/soilhealth-ai" target="_blank" class="project-link">
+          <svg viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          GitHub →
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="section-label reveal">Background</div>
+  <h2 class="section-title reveal">Education.</h2>
+
+  <div class="edu-list">
+    <div class="edu-item reveal">
+      <div class="edu-year">2025 –<br>2029</div>
+      <div class="edu-info">
+        <div class="edu-degree">B.Tech — Computer Science &amp; Engineering</div>
+        <div class="edu-school">VIT Vellore · Vellore, Tamil Nadu</div>
+        <span class="edu-score">CGPA: 8.10 / 10</span>
+      </div>
+    </div>
+    <div class="edu-item reveal">
+      <div class="edu-year">2025</div>
+      <div class="edu-info">
+        <div class="edu-degree">Class XII — TGBIE</div>
+        <div class="edu-school">Narayana Junior College · Hyderabad</div>
+        <span class="edu-score">93.80%</span>
+      </div>
+    </div>
+    <div class="edu-item reveal">
+      <div class="edu-year">2023</div>
+      <div class="edu-info">
+        <div class="edu-degree">Class X — ICSE</div>
+        <div class="edu-school">R.B.K School · Mumbai</div>
+        <span class="edu-score">96.80%</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ACHIEVEMENTS -->
+<section id="achievements">
+  <div class="section-label reveal">Recognition</div>
+  <h2 class="section-title reveal">Achievements &amp;<br>Leadership.</h2>
+
+  <div class="ach-grid">
+    <div class="ach-card reveal">
+      <span class="ach-icon">🏆</span>
+      <div class="ach-title">Hindustan Times Scholarship</div>
+      <div class="ach-desc">Winner of the HT Scholarship Program 2018. Awarded a scholarship of ₹50,000 in recognition of academic excellence.</div>
+    </div>
+    <div class="ach-card reveal">
+      <span class="ach-icon">⚡</span>
+      <div class="ach-title">Central Hack 2026 — Semi-finalist</div>
+      <div class="ach-desc">Reached the penultimate round of VIT's largest hackathon as a team of freshers, competing with senior students.</div>
+    </div>
+    <div class="ach-card reveal">
+      <span class="ach-icon">🎓</span>
+      <div class="ach-title">Student Council Member</div>
+      <div class="ach-desc">Served as a Student Council Member at R.B.K School during 2022–23, representing peers and leading school initiatives.</div>
+    </div>
+    <div class="ach-card reveal">
+      <span class="ach-icon">🔌</span>
+      <div class="ach-title">IEEE VIT — Junior Core</div>
+      <div class="ach-desc">Junior Core Member of the Institute of Electrical and Electronics Engineers VIT Student Branch.</div>
+    </div>
+    <div class="ach-card reveal">
+      <span class="ach-icon">🛠</span>
+      <div class="ach-title">Sensathon 2026 — Organizer</div>
+      <div class="ach-desc">Part of the Organizing Committee for Sensathon-2026, the flagship hackathon of the School of Electronics Engineering at VIT.</div>
+    </div>
+    <div class="ach-card reveal">
+      <span class="ach-icon">📜</span>
+      <div class="ach-title">IBM Prompt Engineering Cert.</div>
+      <div class="ach-desc">Certified by IBM in Prompt Engineering: Shaping Better AI Responses — understanding how to effectively interact with LLMs.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-inner">
+    <div class="section-label reveal">Contact</div>
+    <h2 class="contact-big reveal">Let's build<br>something <span>great.</span></h2>
+    <p class="contact-text reveal">
+      Currently open to internship opportunities, research collaborations, and interesting projects
+      in AI/ML and software development. Drop me a message — I respond fast.
+    </p>
+    <div class="contact-links reveal">
+      <a href="mailto:hrishit.parida@gmail.com" class="contact-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        Email Me
+      </a>
+      <a href="https://www.linkedin.com/in/hrishit-parida-554503381/" target="_blank" class="contact-link">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+          <rect x="2" y="9" width="4" height="12"/>
+          <circle cx="4" cy="4" r="2"/>
+        </svg>
+        LinkedIn
+      </a>
+      <a href="https://github.com/hrish1t" target="_blank" class="contact-link">
+        <svg viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-copy">© 2026 <span>Hrishit Parida</span>. All rights reserved.</div>
+  <div class="footer-copy" style="font-size:.68rem;">Mumbai · Vellore · Available for opportunities</div>
+</footer>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animateCursor() {
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  // Navbar scroll
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => io.observe(el));
+</script>
+</body>
+</html>
